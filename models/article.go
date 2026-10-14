@@ -27,3 +27,12 @@ var articles = []Article{
 func GetArticles() []Article {
 	return articles
 }
+
+func GetArticle(id int) (Article, bool) {
+	for _, article := range articles {
+		if article.ID == id {
+			return article, true
+		}
+	}
+	return Article{}, false
+}
