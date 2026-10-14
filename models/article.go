@@ -48,3 +48,28 @@ func CreateArticle(title, content string) Article {
 	return NewArticle
 
 }
+
+// 修改文章
+func UpdateArticle(id int, title, content string) (Article, bool) {
+	for i, article := range articles {
+		if article.ID == id {
+			articles[i].Content = content
+			articles[i].Title = title
+			return article, true
+		}
+	}
+	return Article{}, false
+
+}
+
+// 删除文章
+func DeleteArticle(id int) bool {
+	for i, article := range articles {
+		if article.ID == id {
+			articles = append(articles[:i], articles[i+1:]...)
+			return true
+		}
+	}
+	return false
+
+}

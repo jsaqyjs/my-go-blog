@@ -1,6 +1,6 @@
 
 ### 1. 查询所有文章
-GET http://localhost:8080/articles
+GET http://localhost:8085/articles
 
 ### 2. 创建新文章
 POST http://localhost:8080/articles
@@ -21,4 +21,21 @@ Content-Type: application/json
 {
   "title": "",
   "content": ""
+}
+### 5. 删除 ID 为 1 的文章
+DELETE http://localhost:8085/articles/1
+
+### 6. 删除后再次查询
+GET http://localhost:8080/articles/1
+
+### 7. 测试不存在的文章
+DELETE http://localhost:8080/articles/999
+
+### 8. 测试非法 ID
+PUT http://localhost:8085/articles/2
+Content-Type: application/json
+
+{
+  "title": "测试",
+  "content": "测试内容"
 }

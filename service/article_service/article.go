@@ -14,3 +14,11 @@ func CreateArticle(title, content string) models.Article {
 	newArticle := models.CreateArticle(title, content)
 	return newArticle
 }
+
+func UpdateArticle(id int, title, content string) (models.Article, bool) {
+	article, ok := models.UpdateArticle(id, title, content)
+	return article, ok
+}
+func DeleteArticle(id int) bool {
+	return models.DeleteArticle(id)
+}
