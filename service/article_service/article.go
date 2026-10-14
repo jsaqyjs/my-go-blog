@@ -2,23 +2,22 @@ package article_service
 
 import "my-go-blog/models"
 
-func GetArticleList() []models.Article {
-	articleList := models.GetArticles()
-	return articleList
-}
-func GetArticleById(id int) (models.Article, bool) {
-	Article, ok := models.GetArticle(id)
-	return Article, ok
-}
-func CreateArticle(title, content string) models.Article {
-	newArticle := models.CreateArticle(title, content)
-	return newArticle
+func GetArticleList() ([]models.Article, error) {
+	return models.GetArticles()
 }
 
-func UpdateArticle(id int, title, content string) (models.Article, bool) {
-	article, ok := models.UpdateArticle(id, title, content)
-	return article, ok
+func GetArticleById(id int) (models.Article, error) {
+	return models.GetArticleById(id)
 }
-func DeleteArticle(id int) bool {
+
+func CreateArticle(title, content string) (models.Article, error) {
+	return models.CreateArticle(title, content)
+}
+
+func UpdateArticle(id int, title, content string) (models.Article, error) {
+	return models.UpdateArticle(id, title, content)
+}
+
+func DeleteArticle(id int) error {
 	return models.DeleteArticle(id)
 }

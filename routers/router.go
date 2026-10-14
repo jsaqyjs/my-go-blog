@@ -1,7 +1,9 @@
 package routers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"my-go-blog/service/article_service"
 	"net/http"
 	"strconv"
@@ -20,7 +22,7 @@ func InitRouter() *gin.Engine {
 			return
 		}
 		ok := article_service.DeleteArticle(id)
-		if !ok {
+		if ok != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    400,
 				"message": "文章不存在",
@@ -58,7 +60,7 @@ func InitRouter() *gin.Engine {
 			request.Title,
 			request.Content,
 		)
-		if !found {
+		if found != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"code":    404,
 				"message": "文章不存在",
@@ -83,10 +85,16 @@ func InitRouter() *gin.Engine {
 			})
 			return
 		}
-		article := article_service.CreateArticle(
+		article, err := article_service.CreateArticle(
 			request.Title,
 			request.Content,
 		)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": err.Error(),
+			})
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
 			"message": "文章创建成功",
@@ -94,7 +102,13 @@ func InitRouter() *gin.Engine {
 		})
 	})
 	r.GET("/articles", func(c *gin.Context) {
-		articles := article_service.GetArticleList()
+		articles, err := article_service.GetArticleList()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": err.Error(),
+			})
+		}
 		c.JSON(200, gin.H{
 			"message": "查询文章成功",
 			"data":    articles,
@@ -113,13 +127,10 @@ func InitRouter() *gin.Engine {
 			return
 		}
 		article, found := article_service.GetArticleById(id)
-		if !found {
-			c.JSON(http.StatusNotFound, gin.H{
-				"code":    404,
-				"message": "文章不存在",
-			})
+		if handleDBError(c, found) {
 			return
 		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
 			"data":    article,
@@ -127,4 +138,25 @@ func InitRouter() *gin.Engine {
 		})
 	})
 	return r
+}
+
+func handleDBError(c *gin.Context, err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(404, gin.H{
+			"code":    404,
+			"message": "文章不存在",
+		})
+		return true
+	}
+
+	c.JSON(500, gin.H{
+		"code":    500,
+		"message": "数据库操作失败",
+	})
+
+	return true
 }
