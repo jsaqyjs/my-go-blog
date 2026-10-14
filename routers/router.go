@@ -7,6 +7,7 @@ import (
 	"my-go-blog/dto"
 	"my-go-blog/models"
 	"my-go-blog/service/article_service"
+	"my-go-blog/service/user_service"
 	"net/http"
 	"strconv"
 )
@@ -264,6 +265,54 @@ func InitRouter() *gin.Engine {
 		c.JSON(http.StatusCreated, gin.H{
 			"code":    201,
 			"message": "批量创建成功",
+		})
+	})
+	// 用户注册
+	r.POST("/users/register", func(c *gin.Context) {
+		var request dto.RegisterRequest
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": "用户名或密码格式不正确",
+			})
+			return
+		}
+		user, err := user_service.Register(
+			request.Username,
+			request.Password,
+		)
+		// 3. 判断注册结果
+		if err != nil {
+
+			if errors.Is(err, models.ErrUsernameExists) {
+				c.JSON(http.StatusConflict, gin.H{
+					"code":    409,
+					"message": "用户名已存在",
+				})
+				return
+			}
+			if errors.Is(err, user_service.ErrInvalidPassword) {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"code":    400,
+					"message": "密码长度不合法",
+				})
+				return
+			}
+			// 其他错误暂时返回服务器错误
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    500,
+				"message": "注册失败",
+			})
+			return
+		}
+		// 4. 返回成功结果，不返回密码
+		c.JSON(http.StatusCreated, gin.H{
+			"code":    201,
+			"message": "注册成功",
+			"data": dto.RegisterResponse{
+				ID:       user.ID,
+				Username: user.Username,
+			},
 		})
 	})
 	return r

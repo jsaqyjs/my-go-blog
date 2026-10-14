@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	
+
 	// 自动创建 articles 数据表
-	if err := database.DB.AutoMigrate(&models.Article{}); err != nil {
+	if err := database.DB.AutoMigrate(&models.Article{}, &models.User{}); err != nil {
 		log.Fatal(err)
 	}
 	r := routers.InitRouter()
