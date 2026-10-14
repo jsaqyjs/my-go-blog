@@ -10,3 +10,7 @@ func GetArticleById(id int) (models.Article, bool) {
 	Article, ok := models.GetArticle(id)
 	return Article, ok
 }
+func CreateArticle(title, content string) models.Article {
+	newArticle := models.CreateArticle(title, content)
+	return newArticle
+}

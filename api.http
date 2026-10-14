@@ -1,0 +1,24 @@
+
+### 1. 查询所有文章
+GET http://localhost:8080/articles
+
+### 2. 创建新文章
+POST http://localhost:8080/articles
+Content-Type: application/json
+
+{
+  "title": "Go后端项目实战",
+  "content": "今天学习Gin的POST请求"
+}
+
+### 3. 根据 ID 查询文章
+GET http://localhost:8080/articles/4
+
+### 4. 测试错误请求
+POST http://localhost:8080/articles
+Content-Type: application/json
+
+{
+  "title": "",
+  "content": ""
+}

@@ -36,3 +36,15 @@ func GetArticle(id int) (Article, bool) {
 	}
 	return Article{}, false
 }
+func CreateArticle(title, content string) Article {
+	newID := len(articles) + 1
+	// 创建文章结构体
+	NewArticle := Article{
+		ID:      newID,
+		Title:   title,
+		Content: content,
+	}
+	articles = append(articles, NewArticle)
+	return NewArticle
+
+}

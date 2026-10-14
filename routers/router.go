@@ -9,6 +9,28 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.Default()
+	r.POST("/articles", func(c *gin.Context) {
+		var request struct {
+			Title   string `json:"title" binding:"required"`
+			Content string `json:"content" binding:"required"`
+		}
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": "请求参数错误，请填写标题和内容",
+			})
+			return
+		}
+		article := article_service.CreateArticle(
+			request.Title,
+			request.Content,
+		)
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "文章创建成功",
+			"data":    article,
+		})
+	})
 	r.GET("/articles", func(c *gin.Context) {
 		articles := article_service.GetArticleList()
 		c.JSON(200, gin.H{
