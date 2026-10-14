@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"my-go-blog/dto"
+	"my-go-blog/models"
 	"my-go-blog/service/article_service"
 	"net/http"
 	"strconv"
@@ -200,6 +201,69 @@ func InitRouter() *gin.Engine {
 			"code":    200,
 			"data":    article,
 			"message": "查询文章成功",
+		})
+	})
+	r.GET("/articles/page", func(c *gin.Context) {
+		page, err1 := strconv.Atoi(
+			c.DefaultQuery("page", "1"))
+		pageSize, err2 := strconv.Atoi(
+			c.DefaultQuery("pageSize", "10"))
+		if err1 != nil || err2 != nil || page < 1 || pageSize < 1 || pageSize > 100 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "分页参数不合法",
+			})
+			return
+		}
+		articles, total, err :=
+			article_service.GetArticlesByPage(page, pageSize)
+		if handleDBError(c, err) {
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code":      200,
+			"data":      articles,
+			"total":     total,
+			"page":      page,
+			"page_size": pageSize,
+			"total_pages": (total + int64(pageSize) - 1) /
+				int64(pageSize),
+		})
+	})
+
+	r.POST("/articles/batch", func(c *gin.Context) {
+		var request struct {
+			Articles []struct {
+				Title   string `json:"title" binding:"required"`
+				Content string `json:"content" binding:"required"`
+				Author  string `json:"author" binding:"required"`
+			} `json:"articles" binding:"required,min=1,max=20,dive"`
+		}
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": "请求参数出错",
+			})
+			return
+		}
+		articles := make([]models.Article, 0, len(request.Articles))
+		for _, article := range request.Articles {
+			articles = append(articles, models.Article{
+				Title:   article.Title,
+				Content: article.Content,
+				Author:  article.Author,
+			})
+		}
+		err := article_service.CreateArticlesBatch(articles)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    500,
+				"message": "批量创建失败，事务已回滚",
+			})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{
+			"code":    201,
+			"message": "批量创建成功",
 		})
 	})
 	return r

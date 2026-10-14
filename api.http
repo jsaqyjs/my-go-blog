@@ -116,3 +116,45 @@ DELETE http://localhost:8080/articles/1
 
 ### 9. 再次删除同一篇文章
 DELETE http://localhost:8080/articles/1
+
+### 10. 正常创建两篇文章
+POST http://localhost:8085/articles/batch
+Content-Type: application/json
+
+{
+  "articles": [
+    {
+      "title": "Go事务实验A",
+      "content": "第一篇文章",
+      "author": "cs"
+    },
+    {
+      "title": "Go事务实验B",
+      "content": "第二篇文章",
+      "author": "cs"
+    }
+  ]
+}
+
+### 实验二：模拟第二篇失败
+POST http://localhost:8085/articles/batch
+Content-Type: application/json
+
+{
+  "articles": [
+    {
+      "title": "事务回滚测试A",
+      "content": "这篇文章不应该被保存",
+      "author": "cs"
+    },
+    {
+      "title": "FAIL",
+      "content": "模拟插入失败",
+      "author": "cs"
+    }
+  ]
+}
+
+
+### 实验三：查询所有文章
+GET http://localhost:8085/articles

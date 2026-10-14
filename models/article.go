@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 	"my-go-blog/database"
 )
@@ -9,7 +10,7 @@ type Article struct {
 	ID      uint   `gorm:"primaryKey;autoIncrement" json:"id"`
 	Title   string `gorm:"type:varchar(255);not null" json:"title"`
 	Content string `gorm:"type:text;not null" json:"content"`
-	Author  string `gorm:"type:varchar(100);not null;default:''" json:"author"`
+	Author  string `gorm:"type:varchar(100);index:idx_author" json:"author"`
 }
 
 func (Article) TableName() string {
@@ -133,4 +134,34 @@ func CountArticles() (int64, error) {
 	var count int64
 	err := database.DB.Model(&Article{}).Count(&count).Error
 	return count, err
+}
+
+func GetArticlesByPage(page, pageSize int) ([]Article, int64, error) {
+	var articles []Article
+	var total int64
+	err := database.DB.Model(&Article{}).Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * 10
+	err = database.DB.Limit(pageSize).Offset(offset).Find(&articles).Error
+	return articles, total, err
+}
+
+func CreateArtclesBatch(items []Article) error {
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		for _, item := range items {
+			article := item
+
+			if article.Title == "FAIL" {
+				return fmt.Errorf("模拟第二次插入失败")
+			}
+			if err := tx.Create(&article).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
 }

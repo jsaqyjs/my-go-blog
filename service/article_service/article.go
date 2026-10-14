@@ -32,3 +32,9 @@ func UpdateArticle(id int, title, content, author string) (models.Article, error
 func DeleteArticle(id int) error {
 	return models.DeleteArticle(id)
 }
+func GetArticlesByPage(page, pageSize int) ([]models.Article, int64, error) {
+	return models.GetArticlesByPage(page, pageSize)
+}
+func CreateArticlesBatch(items []models.Article) error {
+	return models.CreateArtclesBatch(items)
+}
