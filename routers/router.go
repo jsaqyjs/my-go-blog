@@ -47,6 +47,7 @@ func InitRouter() *gin.Engine {
 		var request struct {
 			Title   string `json:"title" binding:"required"`
 			Content string `json:"content" binding:"required"`
+			Author  string `json:"author" binding:"required"`
 		}
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -77,6 +78,7 @@ func InitRouter() *gin.Engine {
 		var request struct {
 			Title   string `json:"title" binding:"required"`
 			Content string `json:"content" binding:"required"`
+			Author  string `json:"author" binding:"required"`
 		}
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -88,6 +90,7 @@ func InitRouter() *gin.Engine {
 		article, err := article_service.CreateArticle(
 			request.Title,
 			request.Content,
+			request.Author,
 		)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -115,7 +118,57 @@ func InitRouter() *gin.Engine {
 			"code":    200,
 		})
 	})
+	r.GET("/articles/search", func(c *gin.Context) {
+		title := c.Query("title")
+		if title == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": "请输入搜索标题",
+			})
+			return
+		}
+		articles, err := article_service.SearchArticles(title)
+		if handleDBError(c, err) {
+			return
+		}
+		c.JSON(200, gin.H{
+			"code":    200,
+			"message": "搜索成功",
+			"data":    articles,
+		})
+	})
+	r.GET("/articles/author/:author", func(c *gin.Context) {
+		author := c.Param("author")
+		if author == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": "作者不能为空",
+			})
+			return
+		}
+		articles, err := article_service.GetArticleByAuthor(author)
+		if handleDBError(c, err) {
+			return
+		}
+		c.JSON(200, gin.H{
+			"code":    200,
+			"message": "搜索成功",
+			"data":    articles,
+		})
+	})
+	r.GET("/articles/latest", func(c *gin.Context) {
 
+		article, err := article_service.GetLatestArticle()
+
+		if handleDBError(c, err) {
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"data": article,
+		})
+	})
 	r.GET("/articles/:id", func(c *gin.Context) {
 		idS := c.Param("id")
 		id, err := strconv.Atoi(idS)

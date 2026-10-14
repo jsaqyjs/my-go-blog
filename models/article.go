@@ -9,6 +9,11 @@ type Article struct {
 	ID      uint   `gorm:"primaryKey;autoIncrement" json:"id"`
 	Title   string `gorm:"type:varchar(255);not null" json:"title"`
 	Content string `gorm:"type:text;not null" json:"content"`
+	Author  string `gorm:"type:varchar(100);not null;default:''" json:"author"`
+}
+
+func (Article) TableName() string {
+	return "articles"
 }
 
 func GetArticles() ([]Article, error) {
@@ -22,12 +27,13 @@ func GetArticleById(id int) (Article, error) {
 	err := database.DB.First(&article, id).Error
 	return article, err
 }
-func CreateArticle(title, content string) (Article, error) {
+func CreateArticle(title, content, author string) (Article, error) {
 
 	// 创建文章结构体
 	NewArticle := Article{
 		Title:   title,
 		Content: content,
+		Author:  author,
 	}
 	err := database.DB.Create(&NewArticle).Error
 	return NewArticle, err
@@ -63,4 +69,28 @@ func DeleteArticle(id int) error {
 	}
 	return nil
 
+}
+
+// 搜索title进行找出文章
+func SearchArticles(title string) ([]Article, error) {
+	var articles []Article
+	err := database.DB.
+		Where("title LIKE ?", "%"+title+"%").
+		Order("id DESC").
+		Find(&articles).Error
+	return articles, err
+}
+
+// 作者查询文章
+func GetArticleByAuthor(author string) ([]Article, error) {
+	var articles []Article
+	err := database.DB.Where("author = ?", author).Find(&articles).Error
+	return articles, err
+}
+
+// 查询最新文章
+func GetLatestArticle() (Article, error) {
+	var article Article
+	err := database.DB.Order("id desc").First(&article).Error
+	return article, err
 }

@@ -39,3 +39,26 @@ Content-Type: application/json
   "title": "测试",
   "content": "测试内容"
 }
+
+
+### 1. 新增文章（需要完成 Author 字段改造）
+POST http://localhost:8085/articles
+Content-Type: application/json
+
+{
+  "title": "Go语言项目实战",
+  "content": "今天学习GORM条件查询",
+  "author": "张三"
+}
+
+### 2. 根据标题搜索
+GET http://localhost:8085/articles/search?title=Go
+
+### 3. 根据作者查询
+GET http://localhost:8085/articles/author/张三
+
+### 4. 查询最新文章
+GET http://localhost:8085/articles/latest
+
+### 5. 查询指定文章
+GET http://localhost:8080/articles/1
