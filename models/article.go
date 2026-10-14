@@ -41,26 +41,59 @@ func CreateArticle(title, content, author string) (Article, error) {
 }
 
 // 修改文章
-func UpdateArticle(id int, title, content string) (Article, error) {
+func UpdateArticle(id int, title, content, author string) (Article, error) {
 	var article Article
 	if err := database.DB.First(&article, id).Error; err != nil {
 		return Article{}, err
 	}
-	if err := database.DB.Model(&article).Updates(map[string]interface{}{
-		"title":   title,
-		"content": content,
-	}).Error; err != nil {
-		return Article{}, err
-	}
+	//if err := database.DB.Model(&article).Updates(map[string]interface{}{
+	//	"title":   title,
+	//	"content": content,
+	//}).Error; err != nil {
+	//	return Article{}, err
+	//}
+	//article.Title = title
+	//article.Content = content
+
 	article.Title = title
 	article.Content = content
 
+	if err := database.DB.Save(&article).Error; err != nil {
+		return Article{}, err
+	}
+
+	result := database.DB.Model(&article).Where("id=?", id).Updates(map[string]interface{}{
+		"title":   title,
+		"content": content,
+		"author":  author,
+	})
+	// 3. 检查数据库错误
+	if result.Error != nil {
+		return Article{}, result.Error
+	}
+
+	// 4. 如果没有影响记录，再确认文章是否存在
+	if result.RowsAffected == 0 {
+		var count int64
+
+		if err := database.DB.Model(&Article{}).
+			Where("id = ?", id).
+			Count(&count).Error; err != nil {
+			return Article{}, err
+		}
+
+		if count == 0 {
+			return Article{}, gorm.ErrRecordNotFound
+		}
+	}
 	return article, nil
 }
 
 // 删除文章
 func DeleteArticle(id int) error {
-	result := database.DB.Delete(&Article{}, id)
+	result := database.DB.
+		Where("id = ?", id).
+		Delete(&Article{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -93,4 +126,11 @@ func GetLatestArticle() (Article, error) {
 	var article Article
 	err := database.DB.Order("id desc").First(&article).Error
 	return article, err
+}
+
+// 返回文章总数
+func CountArticles() (int64, error) {
+	var count int64
+	err := database.DB.Model(&Article{}).Count(&count).Error
+	return count, err
 }

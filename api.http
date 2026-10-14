@@ -62,3 +62,57 @@ GET http://localhost:8085/articles/latest
 
 ### 5. 查询指定文章
 GET http://localhost:8080/articles/1
+
+
+
+### 1. 创建文章
+POST http://localhost:8080/articles
+Content-Type: application/json
+
+{
+  "title": "第8课 GORM项目实战",
+  "content": "学习更加规范的数据库CRUD操作"
+}
+
+### 2. 查询所有文章
+GET http://localhost:8085/articles
+
+### 3. 统计文章总数
+GET http://localhost:8085/articles/count
+
+### 4. 修改文章（把 ID 改为 POST 返回的实际 ID）
+PUT http://localhost:8085/articles/1
+Content-Type: application/json
+
+{
+  "title": "第8课 GORM进阶",
+  "content": "这是一篇修改后的文章",
+  "author": "cs"
+}
+
+### 5. 重复修改为完全相同的内容
+PUT http://localhost:8080/articles/1
+Content-Type: application/json
+
+{
+  "title": "第8课 GORM进阶",
+  "content": "这是一篇修改后的文章"
+}
+
+### 6. 查询不存在的文章
+GET http://localhost:8080/articles/999999
+
+### 7. 修改不存在的文章
+PUT http://localhost:8080/articles/999999
+Content-Type: application/json
+
+{
+  "title": "不存在的文章",
+  "content": "测试404错误"
+}
+
+### 8. 删除文章（改为实际 ID）
+DELETE http://localhost:8080/articles/1
+
+### 9. 再次删除同一篇文章
+DELETE http://localhost:8080/articles/1

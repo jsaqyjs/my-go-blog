@@ -22,8 +22,11 @@ func CreateArticle(title, content, author string) (models.Article, error) {
 	return models.CreateArticle(title, content, author)
 }
 
-func UpdateArticle(id int, title, content string) (models.Article, error) {
-	return models.UpdateArticle(id, title, content)
+func CountArticles() (int64, error) {
+	return models.CountArticles()
+}
+func UpdateArticle(id int, title, content, author string) (models.Article, error) {
+	return models.UpdateArticle(id, title, content, author)
 }
 
 func DeleteArticle(id int) error {

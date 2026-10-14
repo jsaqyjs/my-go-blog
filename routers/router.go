@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"my-go-blog/dto"
 	"my-go-blog/service/article_service"
 	"net/http"
 	"strconv"
@@ -43,12 +44,9 @@ func InitRouter() *gin.Engine {
 			})
 			return
 		}
+		var request dto.ArticleRequest
 		// 2. 接收 JSON 请求体
-		var request struct {
-			Title   string `json:"title" binding:"required"`
-			Content string `json:"content" binding:"required"`
-			Author  string `json:"author" binding:"required"`
-		}
+
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    400,
@@ -60,6 +58,7 @@ func InitRouter() *gin.Engine {
 			id,
 			request.Title,
 			request.Content,
+			request.Author,
 		)
 		if found != nil {
 			c.JSON(http.StatusNotFound, gin.H{
@@ -74,12 +73,25 @@ func InitRouter() *gin.Engine {
 			"message": "文章修改成功",
 		})
 	})
-	r.POST("/articles", func(c *gin.Context) {
-		var request struct {
-			Title   string `json:"title" binding:"required"`
-			Content string `json:"content" binding:"required"`
-			Author  string `json:"author" binding:"required"`
+	r.GET("/articles/count", func(c *gin.Context) {
+
+		count, err := article_service.CountArticles()
+
+		if handleDBError(c, err) {
+			return
 		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "统计成功",
+			"data": gin.H{
+				"total": count,
+			},
+		})
+	})
+	r.POST("/articles", func(c *gin.Context) {
+		var request dto.ArticleRequest
+
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    400,
