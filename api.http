@@ -203,8 +203,8 @@ POST http://localhost:8085/users/register
 Content-Type: application/json
 
 {
-  "username": "wangwu",
-  "password": "GoStudy2026"
+  "username": "lisi",
+  "password": "Test123456"
 }
 
 
@@ -280,4 +280,48 @@ Content-Type: application/json
   "content": "这篇文章由登录用户创建",
   "author": "cs"
 }
+
+
+
+
+### 张三登录
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "Test123456"
+}
+
+### 李四登录
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "lisi",
+  "password": "Test123456"
+}
+
+### 张三查看自己的文章
+GET http://localhost:8085/articles/mine
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiMSIsImV4cCI6MTc5MjA0MzYwOCwiaWF0IjoxNzkyMDM2NDA4fQ.-wWyTKqo1ofVCyjK0hc2omKdz8Ao2yhUzM1tm_eRofY
+
+### 李四查看自己的文章
+GET http://localhost:8085/articles/mine
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiNSIsImV4cCI6MTc5MjA0MzcxMiwiaWF0IjoxNzkyMDM2NTEyfQ.Lg6_vrYmRb2SrdgtWq7FaiO4usVSDbGnICmzgAvxSiE
+
+### 张三尝试修改李四的文章
+PUT http://localhost:8085/articles/12
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiMSIsImV4cCI6MTc5MjA0MzYwOCwiaWF0IjoxNzkyMDM2NDA4fQ.-wWyTKqo1ofVCyjK0hc2omKdz8Ao2yhUzM1tm_eRofY
+Content-Type: application/json
+
+{
+  "title": "尝试越权修改",
+  "content": "这次修改应该被拒绝"
+}
+
+### 张三尝试删除李四的文章
+DELETE http://localhost:8085/articles/12
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiMSIsImV4cCI6MTc5MjA0MzYwOCwiaWF0IjoxNzkyMDM2NDA4fQ.-wWyTKqo1ofVCyjK0hc2omKdz8Ao2yhUzM1tm_eRofY
+
 

@@ -25,12 +25,21 @@ func InitRouter() *gin.Engine {
 			})
 			return
 		}
-		ok := article_service.DeleteArticle(id)
-		if ok != nil {
+		userID, ok := middleware.GetCurrentUserID(c)
+
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "用户未认证",
+			})
+			return
+		}
+		err = article_service.DeleteArticle(id, userID)
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    400,
 				"message": "文章不存在",
 			})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
@@ -57,17 +66,37 @@ func InitRouter() *gin.Engine {
 			})
 			return
 		}
-		article, found := article_service.UpdateArticle(
+		userid, ok := middleware.GetCurrentUserID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "用户未认证",
+			})
+			return
+		}
+		article, err := article_service.UpdateArticle(
 			id,
 			request.Title,
 			request.Content,
 			request.Author,
+			userid,
 		)
-		if found != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"code":    404,
-				"message": "文章不存在",
-			})
+		if err != nil {
+			switch {
+			case errors.Is(err, models.ErrArticleForbidden):
+				c.JSON(http.StatusForbidden, gin.H{
+					"message": "无权修改此文章",
+				})
+
+			case errors.Is(err, gorm.ErrRecordNotFound):
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "文章不存在",
+				})
+
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "修改文章失败",
+				})
+			}
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
@@ -102,10 +131,19 @@ func InitRouter() *gin.Engine {
 			})
 			return
 		}
+		userID, ok := middleware.GetCurrentUserID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无法获取用户身份",
+			})
+			return
+		}
 		article, err := article_service.CreateArticle(
 			request.Title,
 			request.Content,
 			request.Author,
+			userID,
 		)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -232,7 +270,7 @@ func InitRouter() *gin.Engine {
 		})
 	})
 
-	r.POST("/articles/batch", func(c *gin.Context) {
+	r.POST("/articles/batch", middleware.JWTAuthMiddleware(), func(c *gin.Context) {
 		var request struct {
 			Articles []struct {
 				Title   string `json:"title" binding:"required"`
@@ -248,11 +286,20 @@ func InitRouter() *gin.Engine {
 			return
 		}
 		articles := make([]models.Article, 0, len(request.Articles))
+		userID, ok := middleware.GetCurrentUserID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "认证不通过",
+			})
+			return
+		}
 		for _, article := range request.Articles {
 			articles = append(articles, models.Article{
 				Title:   article.Title,
 				Content: article.Content,
 				Author:  article.Author,
+				UserID:  userID,
 			})
 		}
 		err := article_service.CreateArticlesBatch(articles)
@@ -395,6 +442,28 @@ func InitRouter() *gin.Engine {
 				},
 			})
 		})
+	r.GET("articles/mine", middleware.JWTAuthMiddleware(), func(c *gin.Context) {
+		userID, ok := middleware.GetCurrentUserID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "用户未认证",
+			})
+			return
+		}
+
+		articles, err := article_service.GetMyArticles(userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "查询文章失败",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"data": articles,
+		})
+	})
 
 	return r
 }

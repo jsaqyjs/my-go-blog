@@ -9,9 +9,10 @@ import (
 var ErrUsernameExists = errors.New("用户名已存在")
 
 type User struct {
-	ID           uint   `gorm:"primary_key;auto_increment" json:"id"`
-	Username     string `gorm:"type:varchar(50);uniqueIndex;not null" json:"username"`
-	PasswordHash string `gorm:"column:password_hash;type:varchar(255);not null" json:"-"`
+	ID           uint      `gorm:"primary_key;auto_increment" json:"id"`
+	Username     string    `gorm:"type:varchar(50);uniqueIndex;not null" json:"username"`
+	PasswordHash string    `gorm:"column:password_hash;type:varchar(255);not null" json:"-"`
+	Articles     []Article `gorm:"foreignKey:UserID" json:"-"`
 }
 
 // TableName 指定用户表名称

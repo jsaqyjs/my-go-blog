@@ -18,23 +18,26 @@ func GetLatestArticle() (models.Article, error) {
 func SearchArticles(title string) ([]models.Article, error) {
 	return models.SearchArticles(title)
 }
-func CreateArticle(title, content, author string) (models.Article, error) {
-	return models.CreateArticle(title, content, author)
+func CreateArticle(title, content, author string, userId uint) (models.Article, error) {
+	return models.CreateArticle(title, content, author, userId)
 }
 
 func CountArticles() (int64, error) {
 	return models.CountArticles()
 }
-func UpdateArticle(id int, title, content, author string) (models.Article, error) {
-	return models.UpdateArticle(id, title, content, author)
+func UpdateArticle(id int, title, content, author string, userId uint) (models.Article, error) {
+	return models.UpdateArticle(id, title, content, author, userId)
 }
 
-func DeleteArticle(id int) error {
-	return models.DeleteArticle(id)
+func DeleteArticle(id int, userID uint) error {
+	return models.DeleteArticle(id, userID)
 }
 func GetArticlesByPage(page, pageSize int) ([]models.Article, int64, error) {
 	return models.GetArticlesByPage(page, pageSize)
 }
 func CreateArticlesBatch(items []models.Article) error {
 	return models.CreateArtclesBatch(items)
+}
+func GetMyArticles(userID uint) ([]models.Article, error) {
+	return models.GetMyArticles(userID)
 }
