@@ -2,6 +2,7 @@ package user_service
 
 import (
 	"errors"
+	"my-go-blog/utils"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -9,6 +10,37 @@ import (
 )
 
 var ErrInvalidPassword = errors.New("密码长度不合法")
+var ErrInvalidCredentials = errors.New("用户名或密码错误")
+
+func Login(username string, password string) (string, error) {
+	// 1. 根据用户名查询用户
+	user, err := models.GetUserByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", ErrInvalidCredentials
+		}
+		return "", err
+	}
+	// 检查密码
+	// 拿旧密码的加盐+cost 进行完全加密
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.PasswordHash),
+		[]byte(password),
+	)
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return "", ErrInvalidCredentials
+		}
+		return "", err
+	}
+	// 3. 密码正确，生成 JWT
+	token, err := utils.GenerateToken(user.ID)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
 
 func Register(username, password string) (models.User, error) {
 	// 1. 检查密码的字节长度

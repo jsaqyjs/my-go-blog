@@ -267,6 +267,44 @@ func InitRouter() *gin.Engine {
 			"message": "批量创建成功",
 		})
 	})
+	// 用户登录
+	r.POST("/users/login", func(c *gin.Context) {
+		var request dto.LoginRequest
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": "请输入用户名和密码",
+			})
+			return
+		}
+
+		token, err := user_service.Login(request.Username, request.Password)
+		if err != nil {
+
+			// 用户名或密码错误
+			if errors.Is(err, user_service.ErrInvalidCredentials) {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"code":    401,
+					"message": "用户名或密码错误",
+				})
+				return
+			}
+
+			// 数据库或 Token 生成失败
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    500,
+				"message": "登录服务暂时不可用",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"code": 200,
+			"data": gin.H{"token": token,
+				"token_type": "Bearer",
+				"expires_in": 7200},
+			"message": "登录成功",
+		})
+	})
 	// 用户注册
 	r.POST("/users/register", func(c *gin.Context) {
 		var request dto.RegisterRequest
