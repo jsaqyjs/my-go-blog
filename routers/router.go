@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"my-go-blog/dto"
+	"my-go-blog/middleware"
 	"my-go-blog/models"
 	"my-go-blog/service/article_service"
 	"my-go-blog/service/user_service"
@@ -14,7 +15,7 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.Default()
-	r.DELETE("/articles/:id", func(c *gin.Context) {
+	r.DELETE("/articles/:id", middleware.JWTAuthMiddleware(), func(c *gin.Context) {
 		idS := c.Param("id")
 		id, err := strconv.Atoi(idS)
 		if err != nil || id <= 0 {
@@ -36,7 +37,7 @@ func InitRouter() *gin.Engine {
 			"message": "success",
 		})
 	})
-	r.PUT("/articles/:id", func(c *gin.Context) {
+	r.PUT("/articles/:id", middleware.JWTAuthMiddleware(), func(c *gin.Context) {
 		idS := c.Param("id")
 		id, err := strconv.Atoi(idS)
 		if err != nil || id <= 0 {
@@ -91,7 +92,7 @@ func InitRouter() *gin.Engine {
 			},
 		})
 	})
-	r.POST("/articles", func(c *gin.Context) {
+	r.POST("/articles", middleware.JWTAuthMiddleware(), func(c *gin.Context) {
 		var request dto.ArticleRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
@@ -353,6 +354,48 @@ func InitRouter() *gin.Engine {
 			},
 		})
 	})
+	r.GET(
+		"/users/me",
+		middleware.JWTAuthMiddleware(),
+		func(c *gin.Context) {
+			// 1. 获取中间件保存的用户 ID
+			userID, ok := middleware.GetCurrentUserID(c)
+			if !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"code":    401,
+					"message": "无法获取当前用户",
+				})
+				return
+			}
+			// 2. 查询用户
+			user, err := user_service.GetCurrentUser(userID)
+
+			if err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					c.JSON(http.StatusUnauthorized, gin.H{
+						"code":    401,
+						"message": "用户不存在",
+					})
+					return
+				}
+
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"code":    500,
+					"message": "查询用户失败",
+				})
+				return
+			}
+
+			// 3. 返回当前用户的信息
+			c.JSON(http.StatusOK, gin.H{
+				"code": 200,
+				"data": gin.H{
+					"id":       user.ID,
+					"username": user.Username,
+				},
+			})
+		})
+
 	return r
 }
 

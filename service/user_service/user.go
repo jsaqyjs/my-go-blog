@@ -42,6 +42,10 @@ func Login(username string, password string) (string, error) {
 	return token, nil
 }
 
+// GetCurrentUser 查询当前登录用户
+func GetCurrentUser(userID uint) (models.User, error) {
+	return models.GetUserByID(userID)
+}
 func Register(username, password string) (models.User, error) {
 	// 1. 检查密码的字节长度
 	if len([]byte(password)) > 72 {

@@ -158,3 +158,126 @@ Content-Type: application/json
 
 ### 实验三：查询所有文章
 GET http://localhost:8085/articles
+
+
+
+
+### 1. 正常注册用户
+POST http://localhost:8085/users/register
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "Test123456"
+}
+
+### 2. 再次注册相同用户名
+POST http://localhost:8085/users/register
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "Another123456"
+}
+
+### 3. 用户名太短
+POST http://localhost:8085/users/register
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "password": "Test123456"
+}
+
+### 4. 密码太短
+POST http://localhost:8085/users/register
+Content-Type: application/json
+
+{
+  "username": "lisi",
+  "password": "123"
+}
+
+### 5. 再注册一个正常用户
+POST http://localhost:8085/users/register
+Content-Type: application/json
+
+{
+  "username": "wangwu",
+  "password": "GoStudy2026"
+}
+
+
+### 1. 正常登录
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "Test123456"
+}
+
+### 2. 密码错误
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "WrongPassword"
+}
+
+### 3. 用户名不存在
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "notexist123",
+  "password": "Test123456"
+}
+
+### 4. 缺少密码
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan"
+}
+
+
+
+### 1. 用户登录
+POST http://localhost:8085/users/login
+Content-Type: application/json
+
+{
+  "username": "zhangsan",
+  "password": "Test123456"
+}
+
+### 2. 不带 Token，访问用户信息
+GET http://localhost:8085/users/me
+
+### 3. 使用真实 Token 访问用户信息
+GET http://localhost:8085/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiMSIsImV4cCI6MTc5MjAzOTU1OSwiaWF0IjoxNzkyMDMyMzU5fQ.qyuOIUAH-GaVsMydbq1T5sJG7jQJ9EadDm1YUBADvqs
+
+### 4. 不带 Token 创建文章
+POST http://localhost:8085/articles
+Content-Type: application/json
+
+{
+  "title": "未登录用户测试",
+  "content": "这篇文章不应该创建成功"
+}
+
+### 5. 带 Token 创建文章
+POST http://localhost:8085/articles
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiMSIsImV4cCI6MTc5MjAzOTU1OSwiaWF0IjoxNzkyMDMyMzU5fQ.qyuOIUAH-GaVsMydbq1T5sJG7jQJ9EadDm1YUBADvqs
+Content-Type: application/json
+
+{
+  "title": "JWT鉴权测试",
+  "content": "这篇文章由登录用户创建",
+  "author": "cs"
+}
+

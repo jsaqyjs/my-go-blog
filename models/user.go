@@ -20,7 +20,6 @@ func (User) TableName() string {
 }
 
 // GetUserByUsername 通过用户名
-
 func GetUserByUsername(username string) (User, error) {
 	var user User
 	result := database.DB.Where("username=?", username).First(&user)
@@ -41,4 +40,11 @@ func CreateUser(username, passwordHash string) (User, error) {
 		return User{}, err
 	}
 	return user, nil
+}
+
+// GetUserByID 根据主键查询用户
+func GetUserByID(id uint) (User, error) {
+	var user User
+	err := database.DB.First(&user, id).Error
+	return user, err
 }
