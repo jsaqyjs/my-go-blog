@@ -1,10 +1,14 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"log"
 	"my-go-blog/database"
+	"my-go-blog/service/article_service"
+	"time"
 )
 
 type Article struct {
@@ -12,7 +16,7 @@ type Article struct {
 	Title   string `gorm:"type:varchar(255);not null" json:"title"`
 	Content string `gorm:"type:text;not null" json:"content"`
 	Author  string `gorm:"type:varchar(100);index:idx_author" json:"author"`
-	UserID  uint   `gorm:"index" json:"user_id"`
+	UserID  uint   `gorm:"index;not null" json:"user_id"`
 }
 
 var ErrArticleForbidden = errors.New("无权操作此文章")
@@ -42,6 +46,10 @@ func CreateArticle(title, content, author string, userId uint) (Article, error) 
 		UserID:  userId,
 	}
 	err := database.DB.Create(&NewArticle).Error
+	// 创建成功后，清除该 ID 可能存在的空值缓存
+	if err := article_service.DeleteArticleCache(int(NewArticle.ID)); err != nil {
+		log.Printf("创建后删除缓存失败: %v", err)
+	}
 	return NewArticle, err
 
 }
@@ -102,6 +110,20 @@ func DeleteArticle(id int, userID uint) error {
 	}
 	return nil
 
+}
+
+// 修改文章删除缓存
+func DeleteArticleCache(id int) error {
+
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		2*time.Second,
+	)
+	defer cancel()
+
+	key := fmt.Sprintf("article:%d", id)
+
+	return database.RedisDB.Del(ctx, key).Err()
 }
 
 // 搜索title进行找出文章
