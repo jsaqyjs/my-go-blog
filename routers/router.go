@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
 	"my-go-blog/dto"
 	"my-go-blog/middleware"
 	"my-go-blog/models"
@@ -98,6 +99,10 @@ func InitRouter() *gin.Engine {
 				})
 			}
 			return
+		}
+
+		if err := article_service.DeleteArticleCache(id); err != nil {
+			log.Printf("删除文章缓存失败: %v", err)
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
@@ -232,7 +237,7 @@ func InitRouter() *gin.Engine {
 			})
 			return
 		}
-		article, found := article_service.GetArticleById(id)
+		article, found := article_service.GetArticleCache(id)
 		if handleDBError(c, found) {
 			return
 		}
