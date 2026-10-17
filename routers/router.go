@@ -150,6 +150,10 @@ func InitRouter() *gin.Engine {
 			request.Author,
 			userID,
 		)
+		// 创建成功后，清除该 ID 可能存在的空值缓存
+		if err := article_service.DeleteArticleCache(int(article.ID)); err != nil {
+			log.Printf("创建后删除缓存失败: %v", err)
+		}
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"code":    400,
@@ -274,7 +278,11 @@ func InitRouter() *gin.Engine {
 				int64(pageSize),
 		})
 	})
-
+	r.POST(
+		"/articles/batch-process",
+		middleware.JWTAuthMiddleware(),
+		BatchProcessArticleHandler,
+	)
 	r.POST("/articles/batch", middleware.JWTAuthMiddleware(), func(c *gin.Context) {
 		var request struct {
 			Articles []struct {

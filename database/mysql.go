@@ -29,3 +29,19 @@ func InitDB() *gorm.DB {
 	log.Println("MySQL 连接成功")
 	return db
 }
+
+func CloseMySQL() error {
+
+	if DB == nil {
+		return nil
+	}
+
+	// 从 GORM 获取底层 *sql.DB
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+
+	// 关闭数据库连接池
+	return sqlDB.Close()
+}

@@ -332,3 +332,13 @@ GET http://localhost:8085/articles/2
 
 ### 第二次查询同一篇文章
 GET http://localhost:8085/articles/2
+
+
+### 批量查询文章
+POST http://localhost:8085/articles/batch-process
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJteS1nby1ibG9nIiwic3ViIjoiNSIsImV4cCI6MTc5MjE2NjI2OSwiaWF0IjoxNzkyMTU5MDY5fQ.Hv9LcmxSF-iKCbN3OZqoeak9dfyzUih0X5G3NeokKuA
+
+{
+  "article_ids": [1, 2, 3, 4, 5]
+}

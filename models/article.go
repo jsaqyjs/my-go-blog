@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"log"
 	"my-go-blog/database"
-	"my-go-blog/service/article_service"
 	"time"
 )
 
@@ -46,10 +44,7 @@ func CreateArticle(title, content, author string, userId uint) (Article, error) 
 		UserID:  userId,
 	}
 	err := database.DB.Create(&NewArticle).Error
-	// 创建成功后，清除该 ID 可能存在的空值缓存
-	if err := article_service.DeleteArticleCache(int(NewArticle.ID)); err != nil {
-		log.Printf("创建后删除缓存失败: %v", err)
-	}
+
 	return NewArticle, err
 
 }
